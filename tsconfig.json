@@ -24,5 +24,11 @@
     "baseUrl": "."
   },
   "exclude": ["node_modules"],
-  "include": ["./src/**/*.tsx", "./src/**/*.ts"]
+  "include": ["./src/**/*.tsx", "./src/**/*.ts"],
+  "baseUrl": "src",
+  "paths": {
+     "src/*": ["src/*"],
+     "entities/*": ["src/entities/*"],
+     "resolvers/*": ["src/resolvers/*"]
+  },
 }
