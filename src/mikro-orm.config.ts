@@ -3,13 +3,14 @@ import { __prod__ } from "./constants";
 import { Post } from "./entities/Post";
 import { MikroORM } from "@mikro-orm/core";
 import { PostgreSqlDriver } from "@mikro-orm/postgresql";
+import { User } from "./entities/User";
 export default {
   migrations: {
     path: path.join(__dirname, "./migrations"), // path to the folder with migrations
     pathTs: "src/migrations",
     glob: "!(*.d).{js,ts}",
   },
-  entities: [Post],
+  entities: [Post, User],
   dbName: "reddit",
   driver: PostgreSqlDriver,
   debug: !__prod__,
