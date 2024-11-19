@@ -8,6 +8,7 @@ import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import "reflect-metadata";
 import { UserReslover } from "./resolvers/user";
+const redis = require("redis");
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
