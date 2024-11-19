@@ -1,14 +1,14 @@
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import microConfig from "./mikro-orm.config";
-import express, { Application } from "express";
+import express from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import "reflect-metadata";
 import { UserReslover } from "./resolvers/user";
-import redis from "redis";
+import { createClient } from "redis";
 import session from "express-session";
 import RedisStore from "connect-redis";
 import { MyContext } from "./types";
@@ -21,10 +21,11 @@ const main = async () => {
   await orm.getMigrator().up();
 
   const app = express();
-  const redisCliennt = redis.createClient();
+  let redisClient = createClient();
+  // const redisCliennt = redis.createClient();
 
   const redisStore = new RedisStore({
-    client: redisCliennt,
+    client: redisClient,
     disableTouch: true,
   });
 

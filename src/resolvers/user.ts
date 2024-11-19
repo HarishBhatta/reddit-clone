@@ -7,6 +7,7 @@ import {
   InputType,
   Mutation,
   ObjectType,
+  Query,
   Resolver,
 } from "type-graphql";
 import argon2 from "argon2";
@@ -114,9 +115,34 @@ export class UserReslover {
         ],
       };
     }
-    req.session!.userId = user.id;
+    req.session.userId = user.id;
     return {
       user,
+    };
+  }
+
+  // User Detail
+  @Query(() => UserResponse)
+  async getUser(@Ctx() { em, req }: MyContext): Promise<UserResponse> {
+    console.log("Cookie", req.session);
+    if (!req.session.userId) {
+      return {
+        errors: [{ field: "User", message: "You are not logged in" }],
+      };
+    }
+    const user = await em.findOne(User, { id: req.session.userId });
+    if (!user) {
+      return {
+        errors: [
+          {
+            field: "User",
+            message: "User does not exist",
+          },
+        ],
+      };
+    }
+    return {
+      user: user,
     };
   }
 }
