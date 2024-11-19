@@ -10,6 +10,7 @@ import {
   Resolver,
 } from "type-graphql";
 import argon2 from "argon2";
+import { RequiredEntityData } from "@mikro-orm/core";
 
 @InputType()
 class UsernamePasswordInput {
@@ -68,7 +69,7 @@ export class UserReslover {
     const user = em.create(User, {
       username: options.username,
       password: hashedPassword,
-    } as any);
+    } as RequiredEntityData<User>);
     try {
       await em.persistAndFlush(user);
     } catch (error) {
@@ -89,7 +90,7 @@ export class UserReslover {
   @Mutation(() => UserResponse)
   async loginUser(
     @Arg("options") options: UsernamePasswordInput,
-    @Ctx() { em }: MyContext
+    @Ctx() { em, req }: MyContext
   ): Promise<UserResponse> {
     const user = await em.findOne(User, { username: options.username });
     if (!user) {
@@ -113,6 +114,7 @@ export class UserReslover {
         ],
       };
     }
+    req.session!.userId = user.id;
     return {
       user,
     };

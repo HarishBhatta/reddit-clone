@@ -1,3 +1,4 @@
+import { RequiredEntityData } from "@mikro-orm/core";
 import { Post } from "../entities/Post";
 import { MyContext } from "src/types";
 import { Arg, Ctx, Int, Mutation, Query, Resolver } from "type-graphql";
@@ -25,7 +26,7 @@ export class PostResolver {
     @Arg("title", () => String) title: string, // The ()=>type is optional. The graphql can infer it
     @Ctx() { em }: MyContext
   ): Promise<Post> {
-    const post = em.create(Post, { title } as any);
+    const post = em.create(Post, { title } as RequiredEntityData<Post>);
     await em.persistAndFlush(post);
     return post;
   }
@@ -41,7 +42,6 @@ export class PostResolver {
     if (!post) {
       return null;
     }
-    // const post = em.create(Post, { title } as any);
     if (typeof title !== "undefined") {
       post.title = title;
       await em.persistAndFlush(post);

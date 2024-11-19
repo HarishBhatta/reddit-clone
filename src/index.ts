@@ -1,14 +1,17 @@
 import { MikroORM } from "@mikro-orm/core";
 import { __prod__ } from "./constants";
 import microConfig from "./mikro-orm.config";
-import express from "express";
+import express, { Application } from "express";
 import { ApolloServer } from "apollo-server-express";
 import { buildSchema } from "type-graphql";
 import { HelloResolver } from "./resolvers/hello";
 import { PostResolver } from "./resolvers/post";
 import "reflect-metadata";
 import { UserReslover } from "./resolvers/user";
-const redis = require("redis");
+import redis from "redis";
+import session from "express-session";
+import RedisStore from "connect-redis";
+import { MyContext } from "./types";
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
@@ -18,12 +21,35 @@ const main = async () => {
   await orm.getMigrator().up();
 
   const app = express();
+  const redisCliennt = redis.createClient();
+
+  const redisStore = new RedisStore({
+    client: redisCliennt,
+    disableTouch: true,
+  });
+
+  app.use(
+    session({
+      name: "qid",
+      cookie: {
+        maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 Years
+        httpOnly: true,
+        sameSite: "lax",
+        secure: __prod__, // The cookie only works on https
+      },
+      store: redisStore,
+      resave: false, // required: force lightweight session keep alive (touch)
+      saveUninitialized: false, // recommended: only save session when data exists
+      secret: "dsjhfjsdhfkjhdkjshfj",
+    })
+  );
+
   const apolloServer = new ApolloServer({
     schema: await buildSchema({
       resolvers: [HelloResolver, PostResolver, UserReslover],
       validate: false,
     }),
-    context: () => ({ em }),
+    context: ({ req, res }: MyContext) => ({ em, req, res }),
   });
   await apolloServer.start();
   apolloServer.applyMiddleware({ app } as any);
