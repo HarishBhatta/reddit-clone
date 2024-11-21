@@ -12,7 +12,7 @@ import { createClient } from "redis";
 import session from "express-session";
 import RedisStore from "connect-redis";
 import { MyContext } from "./types";
-
+import cors from "cors";
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
   const em = orm.em.fork();
@@ -29,6 +29,7 @@ const main = async () => {
     disableTouch: true,
   });
 
+  app.use(cors({ origin: "http://localhost:3000", credentials: true }));
   app.use(
     session({
       name: "qid",
@@ -53,7 +54,10 @@ const main = async () => {
     context: ({ req, res }: MyContext) => ({ em, req, res }),
   });
   await apolloServer.start();
-  apolloServer.applyMiddleware({ app } as any);
+  apolloServer.applyMiddleware({
+    app,
+    cors: false,
+  } as any);
   app.listen(4000, () => {
     console.log("Server started on 4004");
   });
